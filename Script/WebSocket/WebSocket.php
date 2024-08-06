@@ -4,9 +4,17 @@ define("STATUS","status");
 define("STATUS_SUCCESS","success");
 define("STATUS_ERROR","error");
 
+define("TYPE_MESSAGE", "Message");
+define("TYPE_SET_USER", "SetUser");
+define("TYPE_CREATE_DM_CHANNEL", "CreateDMChannel");
+define("TYPE_JOIN_CHANNEL", "JoinChannel");
+define("TYPE_EXIT_CHANNEL", "ExitChannel");
+
 require __DIR__ . '/../../vendor/autoload.php';
 //require '/var/www/html/vendor/autoload.php';
 //require $_SERVER['DOCUMENT_ROOT']. '/vendor/autoload.php';
+require_once __DIR__ . '/../Util.php'; 
+
 
 use GuzzleHttp\Client;
 use Ratchet\MessageComponentInterface;
@@ -44,22 +52,23 @@ class WebSocket implements MessageComponentInterface {
 
     public function onMessage(ConnectionInterface $from, $msg) {
         echo $msg . "\n";
+
         $json_data = json_decode($msg, true);
         $type = $json_data["type"];
         switch ($type){
-            case "Message":
+            case TYPE_MESSAGE:
                 $this->sendMessage($from, $json_data);
                 break;
-            case "SetUser":
+            case TYPE_SET_USER:
                 $this->setUser($from, $json_data);
                 break;
-            case "CreateDMChannel":
+            case TYPE_CREATE_DM_CHANNEL:
                 $this->createDMChannel($from, $json_data);
                 break;
-            case "JoinChannel":
+            case TYPE_JOIN_CHANNEL:
                 $this->joinChannel($from, $json_data);
                 break;
-            case "ExitChannel":
+            case TYPE_EXIT_CHANNEL:
                 $this->exitChannel($from, $json_data);
                 break;
 

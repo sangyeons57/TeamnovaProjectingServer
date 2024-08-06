@@ -37,8 +37,9 @@ if (!empty($user_email) && !empty($user_password) && !empty($user_name)) {
         $conn->begin_transaction();
 
         // `user` 테이블에 사용자 이름 추가
-        $stmtA = $conn->prepare("INSERT INTO users (username) VALUES (?)");
-        $stmtA->bind_param("s", $user_name);
+        $friends= json_encode(array());
+        $stmtA = $conn->prepare("INSERT INTO users (username, friends, waitink) VALUES (?, ?, ?)");
+        $stmtA->bind_param("sss", $user_name, $friends, $friends);
         $stmtA->execute();
         
         // 마지막으로 삽입된 사용자 ID 가져오기

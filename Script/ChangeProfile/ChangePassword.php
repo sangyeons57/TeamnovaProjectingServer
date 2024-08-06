@@ -1,6 +1,8 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/../config.php';
 
+header('Content-Type: application/json');
+
 // MySQLi 연결
 $mysqli = new mysqli($MysqlServername, $MysqlUsername, $MysqlPassword, $MysqlDbname);
 
