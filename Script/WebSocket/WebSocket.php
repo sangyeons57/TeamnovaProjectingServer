@@ -3,19 +3,29 @@ define("NOT_SETUP","0");
 define("STATUS","status");
 define("STATUS_SUCCESS","success");
 define("STATUS_ERROR","error");
+define("KEY_ERROR_MESSAGE", "errorMessage");
+
+define("KEY_USER_ID", "userId");
+define("KEY_DATA", "data");
 
 define("TYPE_MESSAGE", "Message");
 define("TYPE_SET_USER", "SetUser");
 define("TYPE_CREATE_DM_CHANNEL", "CreateDMChannel");
 define("TYPE_JOIN_CHANNEL", "JoinChannel");
 define("TYPE_EXIT_CHANNEL", "ExitChannel");
+define("TYPE_ADD_WAITING", "AddWaiting");
 
 require __DIR__ . '/../../vendor/autoload.php';
-//require '/var/www/html/vendor/autoload.php';
-//require $_SERVER['DOCUMENT_ROOT']. '/vendor/autoload.php';
-require_once __DIR__ . '/../Util.php'; 
+require_once __DIR__ . '/../Util.php';
 
+require_once __DIR__ . '/EventListenerList/SendMessage.php';
+require_once __DIR__ . '/EventListenerList/SetUser.php';
+require_once __DIR__ . '/EventListenerList/CreateDMChannel.php';
+require_once __DIR__ . '/EventListenerList/ExitChannel.php';
+require_once __DIR__ . '/EventListenerList/JoinChannel.php';
+require_once __DIR__ . '/EventListenerList/AddWaiting.php';
 
+use Aws\Braket\Exception\BraketException;
 use GuzzleHttp\Client;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
@@ -29,23 +39,65 @@ ini_set('error_log', '/var/www/log/error.log');
 
 
 class WebSocket implements MessageComponentInterface {
-    protected $clients;
-    protected $channels;
+    public $clients;
+    public $channels;
+    public $userIdMap;
 
+    public $eventListenerMap;
 
-    public function __construct() {
+    private function __construct() {
         $this->clients = new \SplObjectStorage;
         $this->channels = [];
-        require __DIR__ . '/mysql.php';
+        $this->userIdMap =[];
+        $this->eventListenerMap = [];
 
-        echo "construct";
+        $this->Register();
+        require __DIR__ . '/mysql.php';
+    }
+
+    public function addEventLister($eventName, EventListener $eventListener){
+        if(!isset($this->eventListenerMap[$eventName])){
+            $this->eventListenerMap[$eventName] = [];
+        }
+        $this->eventListenerMap[$eventName][] = $eventListener;
+    }
+
+    public function callEvent($eventName, ConnectionInterface $conn, $json_data){
+        if(isset($this->eventListenerMap[$eventName])){
+            foreach ($this->eventListenerMap[$eventName] as $listener){
+                echo "call Event $eventName \n";
+                $listener->OnCall($conn, $json_data);
+            }
+        }
+    }
+
+    public function Register(){
+        $this->addEventLister(TYPE_MESSAGE, new SendMessage());
+        $this->addEventLister(TYPE_SET_USER, new SetUser());
+        $this->addEventLister(TYPE_CREATE_DM_CHANNEL, new CreateDMChannel());
+        $this->addEventLister(TYPE_EXIT_CHANNEL, new ExitChannel());
+        $this->addEventLister(TYPE_JOIN_CHANNEL, new JoinChannel());
+        $this->addEventLister(TYPE_ADD_WAITING, new AddWaiting());
+    }
+
+    private static $instance =  null;
+    public static function Instance(){
+        if(self::$instance === null){
+            self::$instance = new WebSocket();
+        }
+        return self::$instance;
     }
 
     public function onOpen(ConnectionInterface $conn) {
         // New connection
         $this->clients->attach($conn);
         $conn->channel = NOT_SETUP;
-        //$queryParams = $conn->httpRequest->getUri()->getQuery();
+
+        $queryString = $conn->httpRequest->getUri()->getQuery();
+        parse_str($queryString, $queryParams);
+
+        $this->userIdMap[$queryParams["userId"]] = $conn;
+        $conn->userId= $queryParams["userId"];
 
         echo "New connection! ({$conn->resourceId}) / Clients Count : {$this->clients->count()}\n";
     }
@@ -55,24 +107,7 @@ class WebSocket implements MessageComponentInterface {
 
         $json_data = json_decode($msg, true);
         $type = $json_data["type"];
-        switch ($type){
-            case TYPE_MESSAGE:
-                $this->sendMessage($from, $json_data);
-                break;
-            case TYPE_SET_USER:
-                $this->setUser($from, $json_data);
-                break;
-            case TYPE_CREATE_DM_CHANNEL:
-                $this->createDMChannel($from, $json_data);
-                break;
-            case TYPE_JOIN_CHANNEL:
-                $this->joinChannel($from, $json_data);
-                break;
-            case TYPE_EXIT_CHANNEL:
-                $this->exitChannel($from, $json_data);
-                break;
-
-        }
+        $this->callEvent($type, $from, $json_data);
     }
 
     public function onClose(ConnectionInterface $conn) {
@@ -87,91 +122,19 @@ class WebSocket implements MessageComponentInterface {
         $conn->close();
     }
 
-    private function sendMessage (ConnectionInterface $from, $json_data){
-        if(!isset($from->userId)){
-            $json_data[STATUS] = STATUS_ERROR; 
-            $from->send(json_encode($json_data));
-        } else if(!isset($from->channel) || $from->channel === NOT_SETUP){
-            $json_data[STATUS] = STATUS_ERROR; 
-            $from->send(json_encode($json_data));
+    public function getClient($userId){
+        if(isset($this->userIdMap[$userId])){
+            return $this->userIdMap[$userId];
+        }
+        return null;
+    }
+    public function sendData($userId, $data){
+        $conn = $this->getClient($userId);
+        if (isset($conn)){
+            $conn->send($data);
+            echo "send {$data} message to $userId was success \n";
         } else {
-            $json_data[STATUS] = STATUS_SUCCESS; 
-            $json_data["createTime"] = date("Y-m-d H:i:s");
-            if(WebSocketMysql::Instance()->isDMChannel($from->channel)){
-                $tableName = "dm_". $from->channel;
-                WebSocketMysql::Instance()->addChatData($tableName, $from->userId, $json_data["message"]);
-            }
-            foreach ($this->channels[$from->channel] as $client){
-                if($from === $client) {
-                    $json_data["isSelf"] = true;
-                } else {
-                    $json_data["isSelf"] = false;
-                }
-                $client->send(json_encode($json_data));
-            }
-
+            echo "send {$data} message to $userId was failed \n";
         }
-    }
-
-    private function exitChannel (ConnectionInterface $from, $json_data){
-        if(isset($this->channels[$from->channel])){
-            $this->channels[$from->channel]->detach($from);
-        }
-        $from->channel = NOT_SETUP;
-    }
-    private function joinChannel (ConnectionInterface $from, $json_data){
-        if (!isset($json_data["channelId"])){
-            $json_data[STATUS] = STATUS_ERROR;
-        } else {
-            $this->exitChannel($from, $json_data);
-            $channel = $json_data["channelId"]; 
-            $userId = $json_data["userId"]; 
-            if(isset($from->userId) && $userId == $from->userId &&
-            WebSocketMysql::Instance()->checkChannelExist($channel) &&
-            WebSocketMysql::Instance()->checkIsMember($channel, $userId)){
-                if(!isset($this->channels[$channel])){
-                    $this->channels[$channel] = new \SplObjectStorage;
-                }
-                $this->channels[$channel]->attach($from);
-                $from->channel = $channel;
-                $json_data[STATUS] = STATUS_SUCCESS;
-            } else {
-                $json_data[STATUS] = STATUS_ERROR;
-            }
-        }
-
-        $from->send(json_encode($json_data));
-    }
-
-
-    private function createDMChannel(ConnectionInterface $from, $json_data){
-        if (!(isset($json_data["userId1"]) && isset($json_data["userId2"]))){
-            $json_data[STATUS] = STATUS_ERROR;
-        } else {
-            $user_id1 = $json_data["userId1"];
-            $user_id2 = $json_data["userId2"];
-            if (WebSocketMysql::Instance()->createDMChannel($user_id1, $user_id2)) {
-                $json_data[STATUS] = STATUS_SUCCESS;
-            } else {
-                $json_data[STATUS] = STATUS_ERROR;
-            }
-        }
-        $from->send(json_encode($json_data));
-    }
-
-    private function setUser(ConnectionInterface $from, $json_data){
-        $json_data[STATUS] = STATUS_SUCCESS;
-        foreach ($this->clients as $client){
-            if( $client != $from and $client->userId == $json_data["userId"]){
-                $json_data[STATUS] = STATUS_ERROR;
-            }
-        }
-
-        if($json_data[STATUS] === STATUS_SUCCESS){
-            $from->userId = $json_data["userId"];
-        }
-
-        echo "user [{$from->resourceId}] is [{$json_data[STATUS]}] to assigned [{$json_data["userId"]}] \n";
-        $from->send(json_encode($json_data));
     }
 }

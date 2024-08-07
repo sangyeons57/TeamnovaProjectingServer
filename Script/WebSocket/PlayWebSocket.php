@@ -22,7 +22,7 @@ use React\Socket\Server;
 $server = IoServer::factory(
     new HttpServer(
         new WsServer(
-            new WebSocket()
+            WebSocket::Instance()
         )
     ),
     8080
