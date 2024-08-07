@@ -6,14 +6,19 @@ define("STATUS_ERROR","error");
 define("KEY_ERROR_MESSAGE", "errorMessage");
 
 define("KEY_USER_ID", "userId");
+define("KEY_WAITING_USER_NAME", "waitingUserName");
+define("KEY_USERNAME", "username");
 define("KEY_DATA", "data");
 
+define("TYPE", "type");
 define("TYPE_MESSAGE", "Message");
 define("TYPE_SET_USER", "SetUser");
 define("TYPE_CREATE_DM_CHANNEL", "CreateDMChannel");
 define("TYPE_JOIN_CHANNEL", "JoinChannel");
 define("TYPE_EXIT_CHANNEL", "ExitChannel");
 define("TYPE_ADD_WAITING", "AddWaiting");
+define("TYPE_ADD_FRIEND_ON_WAITING", "AddFriendOnWaiting");
+define("TYPE_REMOVE_WAITING_DATA", "RemoveWaitingData");
 
 require __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../Util.php';
@@ -24,6 +29,7 @@ require_once __DIR__ . '/EventListenerList/CreateDMChannel.php';
 require_once __DIR__ . '/EventListenerList/ExitChannel.php';
 require_once __DIR__ . '/EventListenerList/JoinChannel.php';
 require_once __DIR__ . '/EventListenerList/AddWaiting.php';
+require_once __DIR__ . '/EventListenerList/AddFriendOnWaiting.php';
 
 use Aws\Braket\Exception\BraketException;
 use GuzzleHttp\Client;
@@ -78,6 +84,7 @@ class WebSocket implements MessageComponentInterface {
         $this->addEventLister(TYPE_EXIT_CHANNEL, new ExitChannel());
         $this->addEventLister(TYPE_JOIN_CHANNEL, new JoinChannel());
         $this->addEventLister(TYPE_ADD_WAITING, new AddWaiting());
+        $this->addEventLister(TYPE_ADD_FRIEND_ON_WAITING, new AddFriendOnWaiting());
     }
 
     private static $instance =  null;

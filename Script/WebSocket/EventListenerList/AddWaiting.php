@@ -10,14 +10,15 @@ class AddWaiting implements EventListener{
     public function OnCall(ConnectionInterface $from, $json_data) {
 
         // 전달받은 user_id
-        $waitingUserName = $json_data['waitingUserName']; // 친구로 추가할 ID
-        $userId = $json_data['userId']; // 현재 사용자의 ID
+        $waitingUserName = $json_data[KEY_WAITING_USER_NAME]; // 친구로 추가할 ID
+        $userId = $json_data[KEY_USER_ID]; // 현재 사용자의 ID
+        $username = $json_data[KEY_USERNAME]; // 현재 사용자의 ID
 
         $response = array();
         $mysqli = Util::Instance()->getMysqli();
 
         // 현재 사용자의 waiting 컬럼 조회
-        $sql = "SELECT id, waiting FROM users WHERE username = ?";
+        $sql = "SELECT id, waiting, friends FROM users WHERE username = ?";
         $stmt = $mysqli ->prepare($sql);
         $stmt->bind_param('s', $waitingUserName);
         $stmt->execute();
@@ -26,14 +27,16 @@ class AddWaiting implements EventListener{
 
             $row = $result->fetch_assoc();
             $waiting = json_decode($row['waiting'], true);
+            $friends = json_decode($row['friends'], true);
 
             if (!is_array($waiting)) {
                 $waiting = [];
             }
 
             //데이터가 존제하면 추가하지않고 실패 반환
-            if (in_array($userId, $waiting)) {
+            if (in_array($userId, $waiting) || in_array($userId, $friends)) {
                 $response = array(
+                    TYPE => TYPE_ADD_WAITING,
                     STATUS => STATUS_ERROR,
                     KEY_DATA => "user id already added"
                 );
@@ -49,16 +52,20 @@ class AddWaiting implements EventListener{
 
                 if ($stmt->execute() == true) {
                     $data = array(
-                        "type" => "AddWaiting",
-                        "userId" => $userId
+                        TYPE => TYPE_ADD_WAITING,
+                        KEY_USER_ID  => $userId,
+                        KEY_USERNAME => $username
                     );
                     WebSocket::Instance()->sendData($row["id"], json_encode($data));
+
                     $response = array(
+                        TYPE => TYPE_ADD_WAITING,
                         STATUS => STATUS_SUCCESS,
                         KEY_DATA => "success"
                     );
                 } else {
                     $response = array(
+                        TYPE => TYPE_ADD_WAITING,
                         STATUS => STATUS_ERROR,
                         KEY_DATA => "fail to database update"
                     );
@@ -66,6 +73,7 @@ class AddWaiting implements EventListener{
             }
         } else {
             $response = array(
+                TYPE => TYPE_ADD_WAITING,
                 STATUS => STATUS_ERROR,
                 KEY_DATA => "fail to find user"
             );
