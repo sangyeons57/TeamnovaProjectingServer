@@ -14,9 +14,9 @@ class Util{
     }
 
     // 복사 메서드 방지
-    private function __clone() { }
+    public function __clone() { }
     // 직렬화 방지
-    private function __wakeup() { }
+    public function __wakeup() { }
 
     // 싱글톤 인스턴스 반환 메서드
     public static function Instance() {

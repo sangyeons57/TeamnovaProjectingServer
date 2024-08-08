@@ -5,16 +5,25 @@ define("STATUS_SUCCESS","success");
 define("STATUS_ERROR","error");
 define("KEY_ERROR_MESSAGE", "errorMessage");
 
+define("KEY_ID", "id");
 define("KEY_USER_ID", "userId");
+define("KEY_USER_ID1", "userId1");
+define("KEY_USER_ID2", "userId2");
+define("KEY_FRIEND_ID", "friendId");
+define("KEY_CHANNEL_ID", "channelId");
+define("KEY_FRIEND_NAME", "friendName");
 define("KEY_WAITING_USER_NAME", "waitingUserName");
+define("KEY_MESSAGE", "message");
+define("KEY_DATETIME", "datetime");
 define("KEY_USERNAME", "username");
 define("KEY_DATA", "data");
 
 define("TYPE", "type");
 define("TYPE_MESSAGE", "Message");
+define("TYPE_SEND_MESSAGE", "SendMessage");
 define("TYPE_SET_USER", "SetUser");
 define("TYPE_CREATE_DM_CHANNEL", "CreateDMChannel");
-define("TYPE_JOIN_CHANNEL", "JoinChannel");
+define("TYPE_JOIN_DM_CHANNEL", "JoinDMChannel");
 define("TYPE_EXIT_CHANNEL", "ExitChannel");
 define("TYPE_ADD_WAITING", "AddWaiting");
 define("TYPE_ADD_FRIEND_ON_WAITING", "AddFriendOnWaiting");
@@ -27,7 +36,7 @@ require_once __DIR__ . '/EventListenerList/SendMessage.php';
 require_once __DIR__ . '/EventListenerList/SetUser.php';
 require_once __DIR__ . '/EventListenerList/CreateDMChannel.php';
 require_once __DIR__ . '/EventListenerList/ExitChannel.php';
-require_once __DIR__ . '/EventListenerList/JoinChannel.php';
+require_once __DIR__ . '/EventListenerList/JoinDMChannel.php';
 require_once __DIR__ . '/EventListenerList/AddWaiting.php';
 require_once __DIR__ . '/EventListenerList/AddFriendOnWaiting.php';
 
@@ -46,7 +55,9 @@ ini_set('error_log', '/var/www/log/error.log');
 
 class WebSocket implements MessageComponentInterface {
     public $clients;
+    // channels[체널 키값][사용자 id값] = connectionInterface 객체 형태다
     public $channels;
+    // userIdMap[사용자 id값] = connectionInterface r객체 형태다 
     public $userIdMap;
 
     public $eventListenerMap;
@@ -58,7 +69,7 @@ class WebSocket implements MessageComponentInterface {
         $this->eventListenerMap = [];
 
         $this->Register();
-        require __DIR__ . '/mysql.php';
+        require_once __DIR__ . '/WebSocketMysql.php';
     }
 
     public function addEventLister($eventName, EventListener $eventListener){
@@ -68,21 +79,23 @@ class WebSocket implements MessageComponentInterface {
         $this->eventListenerMap[$eventName][] = $eventListener;
     }
 
+    //json_data는 decode된 형태여야한다.
     public function callEvent($eventName, ConnectionInterface $conn, $json_data){
         if(isset($this->eventListenerMap[$eventName])){
             foreach ($this->eventListenerMap[$eventName] as $listener){
                 echo "call Event $eventName \n";
                 $listener->OnCall($conn, $json_data);
+                echo "finish call Event $eventName \n";
             }
         }
     }
 
     public function Register(){
-        $this->addEventLister(TYPE_MESSAGE, new SendMessage());
+        $this->addEventLister(TYPE_SEND_MESSAGE, new SendMessage());
         $this->addEventLister(TYPE_SET_USER, new SetUser());
         $this->addEventLister(TYPE_CREATE_DM_CHANNEL, new CreateDMChannel());
         $this->addEventLister(TYPE_EXIT_CHANNEL, new ExitChannel());
-        $this->addEventLister(TYPE_JOIN_CHANNEL, new JoinChannel());
+        $this->addEventLister(TYPE_JOIN_DM_CHANNEL, new JoinDMChannel());
         $this->addEventLister(TYPE_ADD_WAITING, new AddWaiting());
         $this->addEventLister(TYPE_ADD_FRIEND_ON_WAITING, new AddFriendOnWaiting());
     }

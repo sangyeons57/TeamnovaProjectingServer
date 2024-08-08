@@ -2,6 +2,7 @@
 require_once __DIR__ . "/../EventListener.php";
 require_once __DIR__ . '/../../Util.php'; 
 require_once __DIR__ . '/../WebSocket.php'; 
+require_once __DIR__ . '/../WebSocketMysql.php'; 
 require_once Util::CONFIG_PATH;
 
 use Ratchet\ConnectionInterface;
@@ -27,11 +28,7 @@ class AddFriendOnWaiting implements EventListener{
 
         try {
             // 현재 사용자의 waiting, friends 컬럼 조회
-            $sql = "SELECT username, waiting, friends FROM users WHERE id = ?";
-            $stmt = $mysqli->prepare($sql);
-            $stmt->bind_param('i', $userId);
-            $stmt->execute();
-            $result = $stmt->get_result();
+            $result = WebSocketMysql::Instance()->getUserByUserId($userId);
 
             if ($result->num_rows > 0) {
                 $row = $result->fetch_assoc();
@@ -71,11 +68,7 @@ class AddFriendOnWaiting implements EventListener{
                 }
 
                 // 상대방의 friends 컬럼에도 추가
-                $sql = "SELECT username, friends, waiting FROM users WHERE id = ?";
-                $stmt = $mysqli->prepare($sql);
-                $stmt->bind_param('i', $friendId);
-                $stmt->execute();
-                $result = $stmt->get_result();
+                $result = WebSocketMysql::Instance()->getUserByUserId($friendId);
 
                 // 데이터베이스에 업데이트
                 if ($result->num_rows > 0) {
@@ -114,8 +107,16 @@ class AddFriendOnWaiting implements EventListener{
                 } else {
                     throw new Exception("Friend user not found");
                 }
-
                 $mysqli->commit();
+                $createDMChannelData = array(
+                    TYPE => TYPE_CREATE_DM_CHANNEL,
+                    KEY_USER_ID1 => $userId,
+                    KEY_USER_ID2 => $friendId
+                );
+                WebSocket::Instance()->callEvent(TYPE_CREATE_DM_CHANNEL, $from, $createDMChannelData);
+                WebSocket::Instance()->sendData($friendId, json_encode($friendData));
+                WebSocket::Instance()->sendData($userId, json_encode($userData));
+
                 echo json_encode([Util::KEY_STATUS => Util::STATUS_SUCCESS, Util::KEY_MESSAGE => "success"]) . "\n";
             } else {
                 throw new Exception("User not found");
@@ -126,8 +127,6 @@ class AddFriendOnWaiting implements EventListener{
             echo json_encode([Util::KEY_STATUS => Util::STATUS_ERROR, Util::KEY_ERROR_MESSAGE => $e->getMessage()]) + "\n";
         }
 
-        WebSocket::Instance()->sendData($friendId, json_encode($friendData));
-        WebSocket::Instance()->sendData($userId, json_encode($userData));
 
         // 연결 종료
         $mysqli->close();

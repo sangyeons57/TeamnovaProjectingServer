@@ -1,7 +1,4 @@
 <?php
-
-use function PHPSTORM_META\type;
-
 class WebSocketMysql {
     private $mysqli;
     private $chatMysqli;
@@ -50,6 +47,32 @@ class WebSocketMysql {
         $stmt->close();
         return $count > 0;
     }
+
+    public function getDMChatData($channelId){
+        $query = "SELECT * FROM dm_{$channelId}";
+        $stmt = $this->chatMysqli->prepare($query);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $data = array();
+        while($row = $result->fetch_assoc()){
+            $stmt1 = $this->mysqli->prepare("SELECT username FROM users where id = ?");
+            $stmt1->bind_param("i", $row["writer_id"]);
+            $stmt1->execute();
+            $userResult = $stmt1->get_result();
+            $usersData = $userResult->fetch_assoc();
+            $data[] = array(
+                KEY_ID => $row["id"],
+                KEY_USERNAME => $usersData["username"],
+                KEY_DATETIME => $row["create_time"],
+                KEY_MESSAGE => $row["data"],
+            );
+            $stmt1->close();
+        }
+        echo json_encode($data);
+        $stmt->close();
+        return $data; 
+    }
+
     public function checkIsMember($channel, $userId){
         $stmt = $this->mysqli->prepare("SELECT members FROM channel WHERE id = ?");
         $stmt->bind_param('i', $channel);
@@ -67,6 +90,26 @@ class WebSocketMysql {
         $stmt->fetch();
         $stmt->close();
         return $isDM == "1";
+    }
+
+    public function getUserByUsername($username){
+        // 현재 사용자의 waiting 컬럼 조회
+        $stmt = $this->mysqli->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->bind_param('s', $waitingUserName);
+        $stmt->execute();
+        $result = $stmt->get_result(); 
+        $stmt->close();
+        return $result->fetch_assoc();
+    }
+
+    public function getUserByUserId($userId){
+        // 현재 사용자의 waiting 컬럼 조회
+        $stmt = $this->mysqli->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $result = $stmt->get_result(); 
+        $stmt->close();
+        return $result->fetch_assoc();
     }
 
 
@@ -132,6 +175,18 @@ class WebSocketMysql {
             echo "add chat {$data} to {$tableName} is failed \n";
             return false;
         }
+    }
+
+    public function getDMChannel($userId1, $userId2){
+        $stmt = $this->mysqli->prepare("SELECT channel_id FROM channel_dm WHERE (user_id1 = ? AND user_id2 = ?) OR (user_id1 = ? AND user_id2 = ?)");
+        $stmt->bind_param("iiii", $userId1, $userId2, $userId2, $userId1);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if($result->num_rows > 0){
+            $row = $result->fetch_assoc();
+            return $row["channel_id"];
+        }
+        return NOT_SETUP;
     }
 }
 

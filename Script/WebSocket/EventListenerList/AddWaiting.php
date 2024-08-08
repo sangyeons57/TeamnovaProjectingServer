@@ -2,6 +2,7 @@
 require_once __DIR__ . "/../EventListener.php";
 require_once __DIR__ . '/../../Util.php'; 
 require_once __DIR__ . '/../WebSocket.php'; 
+require_once __DIR__ . '/../WebSocketMysql.php'; 
 require_once Util::CONFIG_PATH;
 
 use AWS\CRT\Internal\Encoding;
@@ -18,12 +19,8 @@ class AddWaiting implements EventListener{
         $response = array();
         $mysqli = Util::Instance()->getMysqli();
 
-        // 현재 사용자의 waiting 컬럼 조회
-        $sql = "SELECT id, waiting, friends FROM users WHERE username = ?";
-        $stmt = $mysqli ->prepare($sql);
-        $stmt->bind_param('s', $waitingUserName);
-        $stmt->execute();
-        $result = $stmt->get_result(); 
+
+        $result = WebSocketMysql::Instance()->getUserByUsername($waitingUserName);
         if ($result->num_rows > 0) {
 
             $row = $result->fetch_assoc();
