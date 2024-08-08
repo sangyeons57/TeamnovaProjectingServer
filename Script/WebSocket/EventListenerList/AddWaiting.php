@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../Util.php';
 require_once __DIR__ . '/../WebSocket.php'; 
 require_once Util::CONFIG_PATH;
 
+use AWS\CRT\Internal\Encoding;
 use Ratchet\ConnectionInterface;
 
 class AddWaiting implements EventListener{
@@ -37,7 +38,7 @@ class AddWaiting implements EventListener{
             if (in_array($userId, $waiting) || in_array($userId, $friends)) {
                 $response = array(
                     TYPE => TYPE_ADD_WAITING,
-                    STATUS => STATUS_ERROR,
+                    STATUS => STATUS_SUCCESS . "_0",
                     KEY_DATA => "user id already added"
                 );
             } else {
@@ -78,7 +79,6 @@ class AddWaiting implements EventListener{
                 KEY_DATA => "fail to find user"
             );
         }
-
         echo $userId . json_encode($response) . "\n";
         $from->send(json_encode($response));
         $mysqli->close();

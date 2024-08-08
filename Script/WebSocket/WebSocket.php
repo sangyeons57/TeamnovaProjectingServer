@@ -136,12 +136,13 @@ class WebSocket implements MessageComponentInterface {
         return null;
     }
     public function sendData($userId, $data){
+        echo "send {$data} message to";
         $conn = $this->getClient($userId);
         if (isset($conn)){
             $conn->send($data);
-            echo "send {$data} message to $userId was success \n";
+            echo " $userId was success \n";
         } else {
-            echo "send {$data} message to $userId was failed \n";
+            echo " $userId was failed \n";
         }
     }
 }

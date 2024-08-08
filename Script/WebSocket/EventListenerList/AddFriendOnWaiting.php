@@ -13,15 +13,21 @@ class AddFriendOnWaiting implements EventListener{
 
         $mysqli = Util::Instance()->getMysqli();
 
-        $userData = [];
-        $friendData = [];
+        $userData = array(
+            TYPE => TYPE_ADD_FRIEND_ON_WAITING,
+            KEY_USER_ID => $friendId,
+        );
+        $friendData = array(
+            TYPE => TYPE_ADD_FRIEND_ON_WAITING,
+            KEY_USER_ID => $userId ,
+        );
 
         // 트랜잭션 시작
         $mysqli->begin_transaction();
 
         try {
             // 현재 사용자의 waiting, friends 컬럼 조회
-            $sql = "SELECT waiting, friends FROM users WHERE id = ?";
+            $sql = "SELECT username, waiting, friends FROM users WHERE id = ?";
             $stmt = $mysqli->prepare($sql);
             $stmt->bind_param('i', $userId);
             $stmt->execute();
@@ -54,8 +60,7 @@ class AddFriendOnWaiting implements EventListener{
                 $newWaitingJson = json_encode(array_values($waiting));
                 $newFriendsJson = json_encode($friends);
 
-                $userData["waiting"] = array_values($waiting);
-                $userData["friends"] = array_values($friends);
+                $friendData["username"] = $row["username"];
 
                 // 데이터베이스에 업데이트
                 $updateSql = "UPDATE users SET waiting = ?, friends = ? WHERE id = ?";
@@ -66,7 +71,7 @@ class AddFriendOnWaiting implements EventListener{
                 }
 
                 // 상대방의 friends 컬럼에도 추가
-                $sql = "SELECT friends, waiting FROM users WHERE id = ?";
+                $sql = "SELECT username, friends, waiting FROM users WHERE id = ?";
                 $stmt = $mysqli->prepare($sql);
                 $stmt->bind_param('i', $friendId);
                 $stmt->execute();
@@ -96,8 +101,7 @@ class AddFriendOnWaiting implements EventListener{
                     $newFriendWaitingJson = json_encode(array_values($friendWaitings));
                     $newFriendFriendsJson = json_encode($friendFriends);
 
-                    $friendData["waiting"] = array_values($friendWaitings);
-                    $friendData["friends"] = $friendFriends;
+                    $userData["username"] = $row["username"];
 
                     // 데이터베이스에 상대방 업데이트
                     $updateFriendSql = "UPDATE users SET waiting = ?, friends = ? WHERE id = ?";
@@ -121,11 +125,9 @@ class AddFriendOnWaiting implements EventListener{
             $mysqli->rollback();
             echo json_encode([Util::KEY_STATUS => Util::STATUS_ERROR, Util::KEY_ERROR_MESSAGE => $e->getMessage()]) + "\n";
         }
-        $data = array(
-            TYPE => TYPE_REMOVE_WAITING_DATA,
-            KEY_USER_ID => $userId
-        );
-        WebSocket::Instance()->sendData($friendId, $data);
+
+        WebSocket::Instance()->sendData($friendId, json_encode($friendData));
+        WebSocket::Instance()->sendData($userId, json_encode($userData));
 
         // 연결 종료
         $mysqli->close();
