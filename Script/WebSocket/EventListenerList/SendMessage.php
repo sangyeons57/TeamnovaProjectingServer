@@ -23,16 +23,16 @@ class SendMessage implements EventListener{
             if(WebSocketMysql::Instance()->isDMChannel($from->channel)){
                 $tableName = "dm_". $from->channel;
                 WebSocketMysql::Instance()->addChatData($tableName, $from->userId, $json_data["message"]);
-            }
-            foreach ( WebSocket::Instance()->channels[$from->channel] as $client){
-                if($from === $client) {
-                    $json_data["isSelf"] = true;
-                } else {
-                    $json_data["isSelf"] = false;
-                }
+                foreach ( WebSocket::Instance()->channels[$from->channel] as $client){
+                    if($from === $client) {
+                        $json_data["isSelf"] = true;
+                    } else {
+                        $json_data["isSelf"] = false;
+                    }
 
-                echo "channel: {$client->channel} userId: {$client->userId}" . json_encode($json_data) . "\n";
-                $client->send(json_encode($json_data));
+                    echo "channel: {$client->channel} userId: {$client->userId}" . json_encode($json_data) . "\n";
+                    $client->send(json_encode($json_data));
+                }
             }
 
         }
