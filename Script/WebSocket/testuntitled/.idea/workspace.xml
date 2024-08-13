@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="testuntitled.main:jar" />
+    </artifacts-to-build>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="11bd9d16-d468-488c-9825-00cbc2cf8b5e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../../../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../../../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../EventListenerList/AddFriendOnWaiting.php" beforeDir="false" afterPath="$PROJECT_DIR$/../EventListenerList/AddFriendOnWaiting.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../EventListenerList/AddWaiting.php" beforeDir="false" afterPath="$PROJECT_DIR$/../EventListenerList/AddWaiting.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../EventListenerList/JoinDMChannel.php" beforeDir="false" afterPath="$PROJECT_DIR$/../EventListenerList/JoinDMChannel.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/.idea/codeStyles/Project.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/.idea/gradle.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/.idea/jarRepositories.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/build.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/gradlew" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/gradlew.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/settings.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/src/main/java/org/example/Main.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TeamnovaProjectingSocket/src/main/java/org/example/ServerSocket.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../WebSocketMysql.php" beforeDir="false" afterPath="$PROJECT_DIR$/../WebSocketMysql.php" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2kVd7OjLmAEDrKc9gWnStHjeEGz" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "last_opened_file_path": "D:/repository/aws/TeamnovaProjecting/TeamnovaProjecting/Script/WebSocket/testuntitled/out/artifacts/testuntitled_main_jar/testuntitled.main.jar",
+    "project.structure.last.edited": "Artifacts",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="Unnamed" type="JarApplication" nameIsGenerated="true">
+      <option name="JAR_PATH" value="$PROJECT_DIR$/out/artifacts/testuntitled_main_jar/testuntitled.main.jar" />
+      <option name="WORKING_DIRECTORY" value="D:\repository\aws\TeamnovaProjecting\TeamnovaProjecting\Script\WebSocket\testuntitled" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method v="2">
+        <option name="BuildArtifacts" enabled="true">
+          <artifact name="testuntitled.main:jar" />
+        </option>
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="11bd9d16-d468-488c-9825-00cbc2cf8b5e" name="Changes" comment="" />
+      <created>1723372511270</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1723372511270</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

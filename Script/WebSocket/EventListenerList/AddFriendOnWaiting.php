@@ -28,10 +28,9 @@ class AddFriendOnWaiting implements EventListener{
 
         try {
             // 현재 사용자의 waiting, friends 컬럼 조회
-            $result = WebSocketMysql::Instance()->getUserByUserId($userId);
+            $row = WebSocketMysql::Instance()->getUserByUserId($userId);
 
-            if ($result->num_rows > 0) {
-                $row = $result->fetch_assoc();
+            if (isset($row)) {
                 $waiting = json_decode($row['waiting'], true);
                 $friends = json_decode($row['friends'], true);
 
@@ -68,11 +67,10 @@ class AddFriendOnWaiting implements EventListener{
                 }
 
                 // 상대방의 friends 컬럼에도 추가
-                $result = WebSocketMysql::Instance()->getUserByUserId($friendId);
+                $row = WebSocketMysql::Instance()->getUserByUserId($friendId);
 
                 // 데이터베이스에 업데이트
-                if ($result->num_rows > 0) {
-                    $row = $result->fetch_assoc();
+                if (isset($row)) {
                     $friendWaitings = json_decode($row['waiting'], true);
                     $friendFriends = json_decode($row['friends'], true);
 

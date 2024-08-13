@@ -20,10 +20,8 @@ class AddWaiting implements EventListener{
         $mysqli = Util::Instance()->getMysqli();
 
 
-        $result = WebSocketMysql::Instance()->getUserByUsername($waitingUserName);
-        if ($result->num_rows > 0) {
-
-            $row = $result->fetch_assoc();
+        $row = WebSocketMysql::Instance()->getUserByUsername($waitingUserName);
+        if ($row) {
             $waiting = json_decode($row['waiting'], true);
             $friends = json_decode($row['friends'], true);
 

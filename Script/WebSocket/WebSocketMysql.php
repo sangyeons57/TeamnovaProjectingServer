@@ -95,11 +95,12 @@ class WebSocketMysql {
     public function getUserByUsername($username){
         // 현재 사용자의 waiting 컬럼 조회
         $stmt = $this->mysqli->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->bind_param('s', $waitingUserName);
+        $stmt->bind_param('s', $username);
         $stmt->execute();
         $result = $stmt->get_result(); 
+        $data = $result->fetch_assoc();
         $stmt->close();
-        return $result->fetch_assoc();
+        return $data;
     }
 
     public function getUserByUserId($userId){

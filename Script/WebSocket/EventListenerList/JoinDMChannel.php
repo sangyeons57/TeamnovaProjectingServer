@@ -21,8 +21,6 @@ class JoinDMChannel implements EventListener{
         WebSocketMysql::Instance()->checkIsMember($channel, $userId)){
             if(!isset(WebSocket::Instance()->channels[$channel])){
                 WebSocket::Instance()->channels[$channel] = new \SplObjectStorage;
-            } else if(isset(WebSocket::Instance()->channels[$channel])){
-
             }
             WebSocket::Instance()->channels[$channel]->attach($from, $userId);
             $json_data[KEY_FRIEND_NAME] = WebSocketMysql::Instance()->getUserByUserId($friendId)[KEY_USERNAME];
