@@ -38,11 +38,16 @@ if (!empty($user_email) && !empty($user_password) && !empty($user_name)) {
 
         // `user` 테이블에 사용자 이름 추가
         $stmtA = $conn->prepare("INSERT INTO users (username) VALUES (?)");
-        $stmtA->bind_param("sss", $user_name);
+        $stmtA->bind_param("s", $user_name);
         $stmtA->execute();
         
         // 마지막으로 삽입된 사용자 ID 가져오기
         $last_user_id = $stmtA->insert_id;
+
+        $emptyJsonArray = json_encode([]);
+        //userRegister 추가하기
+        $stmtRegister = $conn->prepare("INSERT INTO user_register (user_id, project) VALUES (?, ?)");
+        $stmtRegister->bind_param("is", $last_user_id, $emptyJsonArray);
 
         // 비밀번호 해시화 (보안 강화)
         $hashed_password = password_hash($user_password, PASSWORD_DEFAULT);
