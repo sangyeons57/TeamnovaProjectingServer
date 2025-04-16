@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+
 $user_id = (int) $_POST['user_id'];
 $hashed_password = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
 
